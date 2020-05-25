@@ -1,6 +1,9 @@
       MODULE PARAMS
       IMPLICIT NONE
+      !number of points in the mesh for the R and t cordinates. DNR and DNT
+      !control how often the value of the field is saved in the output file
       INTEGER, PARAMETER :: NR=2000, NT=3000,DNR=5,DNT=10
+      !size of the space-time to be simulated
       DOUBLE PRECISION, PARAMETER :: RF=2000.D0, TF=3000.D0
       DOUBLE PRECISION, PARAMETER :: DR0=RF/NR, DT=TF/NT
       DOUBLE PRECISION :: DR=(RF-DR0)/(NR-1)
@@ -15,12 +18,14 @@
       CONTAINS
 
       FUNCTION V0(XIN) RESULT(V1)
+      !Potential to be used for the evolution of the scalar field      
       DOUBLE PRECISION, DIMENSION(:), INTENT(IN) :: XIN
       DOUBLE PRECISION, DIMENSION(SIZE(PHI,1)) :: V1
           V1=1.D-8*((100*XIN)**2-(100*XIN)**3+0.2D0*(100*XIN)**4)+5.D-7
       END FUNCTION V0
 
       FUNCTION DV0(XIN) RESULT(DV1)
+      !Derivative of the potential
       DOUBLE PRECISION, DIMENSION(:), INTENT(IN) :: XIN
       DOUBLE PRECISION, DIMENSION(SIZE(PHI,1)) :: DV1
           DV1=1.D-6*(2*(100*XIN)-3*(100*XIN)**2+0.8D0*(100*XIN)**3)
@@ -61,7 +66,8 @@
       INTEGER I,J
       CALL CPU_TIME(T0)
       CALL INIT(Y0)
-      OPEN(11,FILE='expansion.dat')
+      !name of the output file
+      OPEN(11,FILE='data.dat')
       
       DO I=1,NT
           CALL RK4(Y0,Y1)
@@ -100,19 +106,14 @@
 
       END PROGRAM
 
-C     ------------------------------------------------------------------
-C     ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-C     ------------------------------------------------------------------
+     !------------------------------------------------------------------
+     !::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+     !------------------------------------------------------------------
       SUBROUTINE RK4(Y0,Y1)
 
-C     Fa servir el métode RK4 amb condicions incials Y(X)=YYIN per 
-C     fer un pas de mida DT en l'equacio Y'(t)=F(X,YIN),on el
-C     vector Y te dimensió NEQUS
       USE PARAMS
       IMPLICIT NONE
       DOUBLE PRECISION Y0(7*NR),Y1(7*NR),KRK(4,7*NR)
-
-C     Fem servir yyin, x i DT per calcular les k
     
       CALL F(Y0,KRK(1,:))
       KRK(1,:)=DT*KRK(1,:)
